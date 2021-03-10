@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import { GetStaticPaths, GetStaticProps, NextPage } from 'next';
 import { ParsedUrlQuery } from 'node:querystring';
 import EventContent from '../../components/event-detail/event-content';
@@ -20,6 +21,10 @@ interface EventDetailQueryParams extends ParsedUrlQuery {
 
 const EventDetailPage: NextPage<EventDetailPageProps> = ({ title, description, date, image, location }) => (
   <>
+      <Head>
+        <title>{title}</title>
+        <meta name="description" content={description} />
+      </Head>
     <EventSummary title={title} />
     <EventLogistics 
       date={date} 

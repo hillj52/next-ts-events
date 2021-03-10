@@ -1,4 +1,4 @@
-import { Event } from '../../dummy-data';
+import { Event } from '../../utils/api-util';
 import EventItem from './event-item';
 
 import classes from './event-list.module.css';

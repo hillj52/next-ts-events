@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import { GetServerSideProps, NextPage } from 'next';
 import { getFilteredEvents, Event } from '../../utils/api-util';
 import EventList from '../../components/events/event-list';
@@ -17,7 +18,13 @@ const FilteredEventsPage: NextPage<FilteredEventsPageProps> = ({ filteredEvents,
   }
 
   return (
-    <EventList events={filteredEvents} />
+    <>
+      <Head>
+        <title>NextJS Events</title>
+        <meta name="description" content="Find great events" />
+      </Head>
+      <EventList events={filteredEvents} />
+    </>
   );
 }
 
