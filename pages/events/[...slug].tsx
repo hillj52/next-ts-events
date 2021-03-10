@@ -1,19 +1,29 @@
-import { useRouter } from 'next/router';
+import { GetServerSideProps } from 'next';
 import { getFilteredEvents } from '../../dummy-data';
 import EventList from '../../components/events/event-list';
+import { ParsedUrlQuery } from 'node:querystring';
 
-const FilteredEventsPage: React.FC = () => {
-  const router = useRouter();
-  
-  const filterData = router.query.slug;
+interface FilteredEventsPageProps {
+  year: string;
+  month: string;
+}
 
-  if (!filterData) {
-    return  <p>Loading...</p>
+interface FilteredEventsQueryParams extends ParsedUrlQuery {
+  slug: [string, string];
+}
+
+export const getServerSideProps: GetServerSideProps<FilteredEventsPageProps, FilteredEventsQueryParams> = async (context) => {
+  const [year, month] = context.params.slug;
+  return {
+    props: {
+      year,
+      month,
+    }
   }
+}
 
-  const year = filterData[0];
-  const month = filterData[1];
-
+const FilteredEventsPage: React.FC<FilteredEventsPageProps> = ({ year, month }) => {
+  
   const numYear = +year;
   const numMonth = +month;
 
@@ -28,9 +38,8 @@ const FilteredEventsPage: React.FC = () => {
   }
 
   return (
-    <>
-      <EventList events={filteredEvents} />
-    </>
+    <EventList events={filteredEvents} />
   );
 }
+
 export default FilteredEventsPage;
