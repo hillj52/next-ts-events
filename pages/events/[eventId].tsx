@@ -1,9 +1,9 @@
-import { GetServerSideProps } from 'next';
+import { GetStaticPaths, GetStaticProps, NextPage } from 'next';
 import { ParsedUrlQuery } from 'node:querystring';
 import EventContent from '../../components/event-detail/event-content';
 import EventLogistics from '../../components/event-detail/event-logistics';
 import EventSummary from '../../components/event-detail/event-summary';
-import { getEventById } from '../../dummy-data';
+import { getEventById, getFeaturedEvents } from '../../utils/api-util';
 
 interface EventDetailPageProps {
   id: string;
@@ -18,22 +18,7 @@ interface EventDetailQueryParams extends ParsedUrlQuery {
   eventId: string;
 }
 
-export const getServerSideProps: GetServerSideProps<EventDetailPageProps, EventDetailQueryParams> = async (context) => {
-  const event = getEventById(context.params.eventId);
-  if (!event) {
-    return {
-      notFound: true,
-    }
-  }
-
-  return {
-    props: {
-      ...event
-    }
-  }
-}
-
-const EventDetailPage: React.FC<EventDetailPageProps> = ({ title, description, date, image, location }) => (
+const EventDetailPage: NextPage<EventDetailPageProps> = ({ title, description, date, image, location }) => (
   <>
     <EventSummary title={title} />
     <EventLogistics 
@@ -47,5 +32,31 @@ const EventDetailPage: React.FC<EventDetailPageProps> = ({ title, description, d
     </EventContent>
   </>
 );
+
+export const getStaticProps: GetStaticProps<EventDetailPageProps, EventDetailQueryParams> = async (context) => {
+  const event = await getEventById(context.params.eventId);
+  if (!event) {
+    return {
+      notFound: true,
+    }
+  }
+
+  return {
+    props: {
+      ...event
+    },
+    revalidate: 30,
+  }
+}
+
+export const getStaticPaths: GetStaticPaths<EventDetailQueryParams> = async () => {
+  const allEvents = await getFeaturedEvents();
+  const paths = allEvents.map(event => ({ params: { eventId: event.id } }));
+  
+  return {
+    paths,
+    fallback: 'blocking',
+  }
+}
 
 export default EventDetailPage;

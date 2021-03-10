@@ -1,11 +1,24 @@
-import { GetServerSideProps } from 'next';
-import { getFilteredEvents } from '../../dummy-data';
+import { GetServerSideProps, NextPage } from 'next';
+import { getFilteredEvents, Event } from '../../utils/api-util';
 import EventList from '../../components/events/event-list';
 import { ParsedUrlQuery } from 'node:querystring';
 
 interface FilteredEventsPageProps {
-  year: string;
-  month: string;
+  filteredEvents: Event[];
+  error?: string;
+}
+
+const FilteredEventsPage: NextPage<FilteredEventsPageProps> = ({ filteredEvents, error }) => {
+
+  if (error) {
+    return (
+      <p>{error}</p>
+    )
+  }
+
+  return (
+    <EventList events={filteredEvents} />
+  );
 }
 
 interface FilteredEventsQueryParams extends ParsedUrlQuery {
@@ -13,33 +26,31 @@ interface FilteredEventsQueryParams extends ParsedUrlQuery {
 }
 
 export const getServerSideProps: GetServerSideProps<FilteredEventsPageProps, FilteredEventsQueryParams> = async (context) => {
-  const [year, month] = context.params.slug;
-  return {
-    props: {
-      year,
-      month,
-    }
-  }
-}
+  const [yearString, monthString] = context.params.slug;
 
-const FilteredEventsPage: React.FC<FilteredEventsPageProps> = ({ year, month }) => {
-  
-  const numYear = +year;
-  const numMonth = +month;
+  const year = +yearString;
+  const month = +monthString;
 
-  if (isNaN(numYear) || isNaN(numMonth) || numMonth < 1 || numMonth > 12) {
-    return <p>Invalid filter</p>
+  if (isNaN(year) || isNaN(month) || month < 1 || month > 12) {
+    return { notFound: true };
   }
 
-  const filteredEvents = getFilteredEvents({ year: numYear, month: numMonth });
+  const filteredEvents = await getFilteredEvents({ year, month });
 
   if (!filteredEvents || filteredEvents.length === 0) {
-    return <p>No Events found for the chosen filter</p>
+    return { 
+      props: {
+        filteredEvents: [], 
+        error: 'No events found' 
+      } 
+    };
   }
 
-  return (
-    <EventList events={filteredEvents} />
-  );
+  return {
+    props: {
+      filteredEvents
+    }
+  }
 }
 
 export default FilteredEventsPage;
