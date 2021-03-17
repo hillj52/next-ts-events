@@ -13,14 +13,17 @@ interface CommentsProps {
 
 const Comments: React.FC<CommentsProps & NotificationContextProps> = ({ eventId, appContext }) => {
   const [showComments, setShowComments] = useState(false);
+  const [isFetchingComments, setIsFetchingComments] = useState(false);
   const [comments, setComments] = useState<Comment[]>([]);
 
   useEffect(() => {
     if (showComments) {
+      setIsFetchingComments(true);
       axios
         .get<GetResponseType>(`/api/comments/${eventId}`)
         .then(response => {
           setComments(response.data.comments);
+          setIsFetchingComments(false);
         });
     }
   }, [showComments])
@@ -45,7 +48,7 @@ const Comments: React.FC<CommentsProps & NotificationContextProps> = ({ eventId,
     } catch (error) {
       appContext.showNotification({
         title: 'Error',
-        message: error.message || 'General Server Error',
+        message: error.message || 'Something went wrong',
         status: 'error',
       });
     }
@@ -57,7 +60,8 @@ const Comments: React.FC<CommentsProps & NotificationContextProps> = ({ eventId,
         {showComments ? 'Hide' : 'Show'} Comments
       </button>
       {showComments && <NewComment onAddComment={addCommentHandler} />}
-      {showComments && <CommentList comments={comments} />}
+      {showComments && !isFetchingComments && <CommentList comments={comments} />}
+      {showComments && isFetchingComments && <p>Loading Comments...</p>}
     </section>
   );
 }
