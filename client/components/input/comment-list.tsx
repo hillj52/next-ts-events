@@ -1,5 +1,5 @@
 import React from 'react';
-import { Comment } from '../../pages/api/comments/[eventId]';
+import { Comment } from '../../utils/api-utils/comments';
 import classes from './comment-list.module.css';
 
 interface CommentListProps {

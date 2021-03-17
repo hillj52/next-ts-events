@@ -1,14 +1,34 @@
 import axios from 'axios';
 import React, { useRef } from 'react';
+import withAppContext, { NotificationContextProps } from '../hoc/with-notification-consumer';
 import classes from './newsletter-registration.module.css';
 
-const NewsletterRegistration: React.FC = () => {
+
+const NewsletterRegistration: React.FC<NotificationContextProps> = ({ appContext }) => {
   const emailInputRef = useRef<HTMLInputElement>();
+  const { showNotification } = appContext;
 
   const registrationHandler = async (event: React.FormEvent) => {
     event.preventDefault();
-    const response = await axios.post('/api/newsletter', { email: emailInputRef.current.value });
-    console.log(response);
+    showNotification({
+      title: 'Signing up',
+      message: 'Registering for newsletter',
+      status: 'pending',
+    });
+    try {
+      await axios.post('/api/newsletter', { email: emailInputRef.current.value });
+      showNotification({
+        title: 'Success',
+        message: 'Successfully registered for newsletter',
+        status: 'success',
+      });
+    } catch (error) {
+      showNotification({
+        title: 'Error',
+        message: error.message || 'Something went wrong',
+        status: 'error',
+      });
+    }
   }
 
   return (
@@ -30,4 +50,4 @@ const NewsletterRegistration: React.FC = () => {
   );
 }
 
-export default NewsletterRegistration;
+export default withAppContext(NewsletterRegistration);
